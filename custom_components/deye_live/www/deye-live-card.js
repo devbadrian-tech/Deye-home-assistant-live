@@ -60,6 +60,19 @@ const styles = `
   footer{display:flex;justify-content:space-between;gap:8px;margin-top:16px;font-size:9px;color:var(--dl-muted);letter-spacing:.015em}.notice{display:none;font-size:11px;color:var(--dl-muted);padding:12px 0 0;line-height:1.5}.notice.visible{display:block}.offline .stage{opacity:.45}.stale .stage{opacity:.65}.offline .fill,.stale .fill{background:var(--dl-muted)}.offline .moving,.stale .moving{animation:none;opacity:0}.empty{font-size:13px;line-height:1.6;color:var(--dl-muted);padding:20px 0}.hidden{display:none!important}
   @keyframes travel{to{stroke-dashoffset:-42}}@media(prefers-reduced-motion:reduce){.moving{animation:none}.fill{transition:none}}@media(max-width:360px){ha-card{padding:20px 16px 15px}.watts{font-size:17px}.home .watts{font-size:20px}.summary-value{font-size:10px}h2{font-size:19px}}
 `;
+// Extra frontend modules can run before HA replaces the native element registry.
+// Wait before capturing HTMLElement as well as before defining either card. Waiting
+// on the old registry's whenDefined() would never resolve after that replacement.
+if (typeof document !== "undefined" && typeof customElements !== "undefined") {
+  if (document.readyState === "loading") {
+    await new Promise(resolve => document.addEventListener("DOMContentLoaded", resolve, { once: true }));
+  }
+  if (document.querySelector("home-assistant")) {
+    while (!customElements.get("home-assistant")) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  }
+}
 const BaseElement = typeof HTMLElement === "undefined" ? class {} : HTMLElement;
 export class DeyeLiveCard extends BaseElement {
   static getConfigElement() { return document.createElement("deye-live-card-editor"); }
