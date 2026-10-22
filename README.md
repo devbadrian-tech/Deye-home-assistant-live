@@ -1,5 +1,7 @@
 # Deye Live
 
+**English** | [繁體中文](README.zh-Hant.md)
+
 ### Your home's energy, directly from your inverter.
 
 **Created by Adrian and Codex**
