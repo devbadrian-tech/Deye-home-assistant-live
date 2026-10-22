@@ -14,7 +14,9 @@ It connects to a compatible Deye logger over your local network and shows house
 consumption, grid import/export, battery power, battery percentage and solar
 generation. No Deye Cloud account or Solarman V5 connection is required.
 
-<p align="center"><img src="docs/energy-flow.svg" alt="Illustration of solar, grid and battery power flowing to a home" width="680"></p>
+<p align="center"><img src="docs/deye-live-card.png" alt="Deye Live energy-flow card showing solar, home, grid, battery power and battery level" width="450"></p>
+
+<p align="center"><em>Actual card screenshot with synthetic sample data.</em></p>
 
 ## At a glance
 
@@ -76,10 +78,34 @@ The logger must already provide a local Modbus TCP service. Some WiBLE loggers
 expose this through **Link2 → Modbus TCP**. This integration does not enable or
 reconfigure the logger. Its existing cloud connection can remain in place.
 
+## Enable local Modbus TCP on the logger
+
+These steps apply to the tested WiBLE logger firmware. Menu labels can differ
+on other models. This is a one-time manual logger configuration change; the
+integration itself only reads data.
+
+1. Find the logger's current IP in your router's connected-device list. Reserve
+   that address so it does not change later.
+2. On the same LAN, open `http://<LOGGER_IP>/` in a browser and sign in using your
+   own logger credentials. Do not publish passwords or screenshots with credentials.
+3. Open the logger's link/connection settings and select **Link2**.
+4. Choose **Modbus TCP → Default**. Keep **Link1** on its existing Deye Cloud
+   connection. Leave other settings at their existing values unless the logger's
+   documentation requires a change.
+5. Apply/save the setting. The tested logger warns that applying it restarts the
+   logger; wait for it to reconnect to your network.
+6. In Deye Live, connect to the logger's LAN IP with **port 502** and **unit 1**.
+   A successful setup validates the inverter identity and reads live power registers.
+
+Modbus TCP is unencrypted and can also be used to write settings by other
+clients. Enable it only on a trusted LAN; never forward port 502 to the internet.
+If Link2 or Modbus TCP is missing, check the logger's own model/firmware
+instructions; Solarman V5 and transparent Modbus TCP are different protocols.
+
 ## Install with HACS
 
 1. Open **HACS → ⋮ → Custom repositories**.
-2. Add `https://github.com/devbadrian-tech/deye-live` and select **Integration**.
+2. Add `https://github.com/devbadrian-tech/Deye-home-assistant-live` and select **Integration**.
 3. Find **Deye Live** in HACS and download it.
 4. Restart Home Assistant.
 5. Open **Settings → Devices & services → Add integration → Deye Live**.
@@ -264,7 +290,7 @@ The single-phase mapping was checked against these primary implementations:
 - [Deye single-phase reader](https://github.com/kbialek/deye-inverter-mqtt/blob/main/src/deye_sensors_deye_hybrid.py)
 - [Home Assistant custom-card documentation](https://contributors.home-assistant.io/frontend/custom-ui/card/)
 
-The illustration above is a diagram, not a capture of household telemetry.
+The screenshot uses synthetic sample readings, not household telemetry.
 
 ## License and credits
 

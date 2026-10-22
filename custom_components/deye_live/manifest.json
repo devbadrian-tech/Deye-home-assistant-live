@@ -6,12 +6,12 @@
   "dependencies": [
     "frontend"
   ],
-  "documentation": "https://github.com/devbadrian-tech/deye-live",
+  "documentation": "https://github.com/devbadrian-tech/Deye-home-assistant-live",
   "iot_class": "local_polling",
   "integration_type": "device",
   "requirements": [],
   "codeowners": [
     "@devbadrian-tech"
   ],
-  "issue_tracker": "https://github.com/devbadrian-tech/deye-live/issues"
+  "issue_tracker": "https://github.com/devbadrian-tech/Deye-home-assistant-live/issues"
 }
