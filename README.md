@@ -88,7 +88,7 @@ show_limits: true
 ```
 
 Replace `XXXX` with the actual entity ID shown in Home Assistant. If a customized
-frontend prevents automatic loading, register `/deye_live/deye-live-card.js?v=0.1.0`
+frontend prevents automatic loading, register `/deye_live/deye-live-card.js?v=0.1.0&dashboard=1`
 as a **JavaScript module** under Dashboard Resources, then refresh the browser.
 
 ## Understanding the readings
@@ -161,6 +161,15 @@ protocol; keep it on your trusted LAN and do not expose port 502 to the internet
 | Battery limits show a dash | That field may be unsupported, invalid or temporarily unavailable |
 | IP address changes | Use a DHCP reservation or update the integration options |
 
+If version 0.1.0 intermittently reports **Custom element doesn't exist:
+deye-live-card** after a refresh, edit its Dashboard Resource URL to
+`/deye_live/deye-live-card.js?v=0.1.0&dashboard=1` (type: JavaScript module).
+The distinct URL makes the dashboard evaluate the card after the frontend is
+ready, even if the automatic loader ran too early. No HA restart is needed.
+This addresses the [Home Assistant early-module registration race](https://github.com/home-assistant/frontend/issues/53890);
+it does not change telemetry or inverter settings. Development builds also wait
+for the frontend registry before defining the card and editor.
+
 When reporting a problem, include the inverter model, logger firmware, HA
 version and the error text. Remove IPs, serials, credentials and private readings
 from anything you publish.
@@ -171,7 +180,7 @@ The offline tests use synthetic data and do not connect to your LAN:
 
 ```sh
 python3 -m unittest discover -s tests -v
-node --test tests/card.test.js
+node --test tests/*.test.js
 ```
 
 Coverage includes protocol framing, rejection of writes, signed decoding,
