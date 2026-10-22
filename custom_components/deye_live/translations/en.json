@@ -1,0 +1,46 @@
+{
+  "title": "Deye Live",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your Deye inverter",
+        "description": "Read-only local readings for the SUN SG0xLP1 family. Link2 Modbus TCP must already be enabled on the logger. Positive grid power means import; positive battery power means discharge.",
+        "data": {
+          "host": "Logger IP address",
+          "port": "Modbus TCP port",
+          "unit": "Modbus unit",
+          "scan_interval": "Update interval (seconds)",
+          "invert_grid": "Reverse grid direction",
+          "invert_battery": "Reverse battery direction"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the logger. Check its IP, port and Link2 Modbus TCP setting.",
+      "unsupported_device": "The inverter identity or register profile did not match. Only SG0xLP1 is supported."
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Local connection",
+        "description": "Changes affect how readings are collected and displayed. No settings are written to the inverter.",
+        "data": {
+          "host": "Logger IP address",
+          "port": "Modbus TCP port",
+          "unit": "Modbus unit",
+          "scan_interval": "Update interval (seconds)",
+          "invert_grid": "Reverse grid direction",
+          "invert_battery": "Reverse battery direction"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the logger. Check its IP, port and Link2 Modbus TCP setting.",
+      "unsupported_device": "The inverter identity or register profile did not match. Only SG0xLP1 is supported."
+    }
+  }
+}

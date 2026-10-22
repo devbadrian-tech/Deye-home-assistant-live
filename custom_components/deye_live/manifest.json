@@ -1,0 +1,17 @@
+{
+  "domain": "deye_live",
+  "name": "Deye Live",
+  "version": "0.1.0",
+  "config_flow": true,
+  "dependencies": [
+    "frontend"
+  ],
+  "documentation": "https://github.com/devbadrian-tech/deye-live",
+  "iot_class": "local_polling",
+  "integration_type": "device",
+  "requirements": [],
+  "codeowners": [
+    "@devbadrian-tech"
+  ],
+  "issue_tracker": "https://github.com/devbadrian-tech/deye-live/issues"
+}

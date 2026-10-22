@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="390" viewBox="0 0 800 390" role="img" aria-label="Deye Live energy-flow illustration">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f4f7f0"/><stop offset="1" stop-color="#e6eee6"/></linearGradient></defs>
+<rect width="800" height="390" rx="28" fill="url(#bg)"/>
+<g font-family="system-ui,sans-serif" fill="#244e40"><text x="42" y="48" font-size="12" letter-spacing="3">DEYE LIVE</text><text x="42" y="92" font-size="31" font-weight="600">Every watt. At a glance.</text><text x="42" y="124" font-size="14" fill="#728779">Local readings · Read-only access</text></g>
+<g fill="none" stroke="#a2bfae" stroke-width="2"><path d="M160 251H640M400 165v86"/><path d="m270 246 8 5-8 5m260-10-8 5 8 5m-135-60 5 8 5-8" stroke="#398565"/></g>
+<g font-family="system-ui,sans-serif" text-anchor="middle">
+<circle cx="400" cy="155" r="34" fill="#f9fbf6" stroke="#d3ddce"/><g stroke="#b69544" stroke-width="2" fill="none"><circle cx="400" cy="155" r="11"/><path d="M400 134v6m0 30v6m-21-21h6m30 0h6m-36-15 4 4m22 22 4 4m-30 0 4-4m22-22 4-4"/></g><text x="453" y="160" text-anchor="start" fill="#728779" font-size="13">Solar</text>
+<circle cx="160" cy="251" r="43" fill="#f9fbf6" stroke="#d3ddce"/><g stroke="#426d58" stroke-width="2" fill="none"><path d="m151 231-9 41m27-41 9 41m-31-14h26m-23-15h20m-19-12h18m-17 3 20 24m-4-24-20 24"/></g><text x="160" y="321" fill="#244e40" font-size="16">Grid</text>
+<circle cx="400" cy="251" r="53" fill="#244e40"/><g stroke="#f3faf4" stroke-width="2.4" fill="none"><path d="m379 248 21-18 21 18m-37-4v29h32v-29m-23 29v-17h14v17"/></g><text x="400" y="333" fill="#244e40" font-size="18" font-weight="600">Home</text>
+<circle cx="640" cy="251" r="43" fill="#f9fbf6" stroke="#d3ddce"/><g stroke="#398565" stroke-width="2" fill="none"><rect x="619" y="238" width="37" height="25" rx="6"/><path d="M661 245v11m-34-11v11m10-11v11m10-11v11"/></g><text x="640" y="321" fill="#244e40" font-size="16">Battery</text>
+</g><text x="758" y="366" text-anchor="end" font-family="system-ui,sans-serif" font-size="10" fill="#728779">Created by Adrian and Codex</text></svg>

@@ -1,0 +1,46 @@
+{
+  "title": "Deye Live",
+  "config": {
+    "step": {
+      "user": {
+        "title": "連接 Deye 逆變器",
+        "description": "透過本地網絡唯讀取得 SUN SG0xLP1 即時數據。記錄器須已啟用 Link2 Modbus TCP。電網正值代表輸入，電池正值代表放電。",
+        "data": {
+          "host": "記錄器 IP 位址",
+          "port": "Modbus TCP 連接埠",
+          "unit": "Modbus 裝置位址",
+          "scan_interval": "更新間隔（秒）",
+          "invert_grid": "反轉電網方向",
+          "invert_battery": "反轉電池方向"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the logger. Check its IP, port and Link2 Modbus TCP setting.",
+      "unsupported_device": "The inverter identity or register profile did not match. Only SG0xLP1 is supported."
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Local connection",
+        "description": "Changes affect how readings are collected and displayed. No settings are written to the inverter.",
+        "data": {
+          "host": "記錄器 IP 位址",
+          "port": "Modbus TCP 連接埠",
+          "unit": "Modbus 裝置位址",
+          "scan_interval": "更新間隔（秒）",
+          "invert_grid": "反轉電網方向",
+          "invert_battery": "反轉電池方向"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the logger. Check its IP, port and Link2 Modbus TCP setting.",
+      "unsupported_device": "The inverter identity or register profile did not match. Only SG0xLP1 is supported."
+    }
+  }
+}
