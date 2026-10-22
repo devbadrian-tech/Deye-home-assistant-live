@@ -18,4 +18,4 @@ jobs:
       - name: Read-only client and protocol tests
         run: python -m unittest discover -s tests -v
       - name: Card behavior tests
-        run: node --test tests/card.test.js
+        run: node --test tests/*.test.js
