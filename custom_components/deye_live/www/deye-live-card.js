@@ -27,6 +27,7 @@ const EN = {
   readonly: "Read only", updated: "Updated", ago: "s ago", local: "Local · every", seconds: "s",
   missing: "Choose a Deye Live snapshot sensor in the card editor.", missingLimits: "Limits unavailable",
   source: "Snapshot sensor", cardTitle: "Card title", showSolar: "Show solar", showLimits: "Show battery limits",
+  language: "Card language", automatic: "Follow Home Assistant",
   awaiting: "Waiting for a fresh local reading", cached: "Last reading is delayed. Flow animation is paused.",
   liveNote: "Live local responses; the logger does not provide a measurement acquisition timestamp.",
 };
@@ -39,9 +40,17 @@ const ZH = {
   scheduleNote: "排程電量為運作目標，並非充電量的硬性上限。", readonly: "唯讀", updated: "更新於", ago: "秒前",
   local: "本地 · 每", seconds: "秒", missing: "請在卡片編輯器選擇 Deye Live 即時快照感測器。", missingLimits: "無法讀取限制",
   source: "即時快照感測器", cardTitle: "卡片標題", showSolar: "顯示太陽能", showLimits: "顯示電池限制",
+  language: "卡片語言", automatic: "跟隨 Home Assistant",
   awaiting: "正在等候新的本地數據", cached: "數據更新延遲，電力流動動畫已暫停。", liveNote: "即時本地回應；記錄器沒有提供量測採集時間。",
 };
-const textFor = hass => (hass?.locale?.language || hass?.language || "en").startsWith("zh") ? ZH : EN;
+export function cardLanguage(hass, configured = "auto") {
+  const language = typeof configured === "string" ? configured.toLowerCase() : "auto";
+  if (language === "en") return "en";
+  if (language === "zh-hant") return "zh-Hant";
+  const automatic = hass?.locale?.language || hass?.language || "en";
+  return String(automatic).toLowerCase().startsWith("zh") ? "zh-Hant" : "en";
+}
+const textFor = (hass, configured) => cardLanguage(hass, configured) === "zh-Hant" ? ZH : EN;
 const icons = {
   solar: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
   grid: '<path d="M9 3h6l4 18M9 3L5 21M7 10h10M5.5 16h13M9 3l8 7M15 3l-8 7m0 0 11 6m-1-6L6 16m0 0 10 5m2-5L8 21"/>',
@@ -77,11 +86,11 @@ const BaseElement = typeof HTMLElement === "undefined" ? class {} : HTMLElement;
 export class DeyeLiveCard extends BaseElement {
   static getConfigElement() { return document.createElement("deye-live-card-editor"); }
   static getStubConfig(hass) {
-    return { entity: Object.values(hass?.states || {}).find(e => e.attributes?.deye_live)?.entity_id || "", show_solar: true, show_limits: true };
+    return { entity: Object.values(hass?.states || {}).find(e => e.attributes?.deye_live)?.entity_id || "", language: "auto", show_solar: true, show_limits: true };
   }
   setConfig(config) {
     if (!config || typeof config.entity !== "string") throw new Error("Select a Deye Live snapshot sensor");
-    this._config = { show_solar: true, show_limits: true, ...config };
+    this._config = { language: "auto", show_solar: true, show_limits: true, ...config };
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
     this.build(); this.render();
   }
@@ -101,7 +110,7 @@ export class DeyeLiveCard extends BaseElement {
     if (!this.shadowRoot || !this._config || !this._hass) return;
     const $ = id => this.shadowRoot.getElementById(id);
     const put = (id, value) => { $(id).textContent = value; };
-    const t = textFor(this._hass), e = this._hass.states?.[this._config.entity];
+    const t = textFor(this._hass, this._config.language), e = this._hass.states?.[this._config.entity];
     const f = freshness(e), live = f.state === "live", offline = f.state === "offline";
     const r = !offline ? e?.attributes?.readings || {} : {};
     const rawLimits = e?.attributes?.limits || {};
@@ -144,7 +153,7 @@ export class DeyeLiveCard extends BaseElement {
       slots.dataset.signature = signature;
     }
     put("schedule-note", t.scheduleNote);
-    put("limits-age", `${t.readonly}${Number.isFinite(limitAge) && Object.keys(limits).length ? ` · ${t.updated} ${new Date(e.attributes.limits_read_at).toLocaleTimeString()}` : ""}`);
+    put("limits-age", `${t.readonly}${Number.isFinite(limitAge) && Object.keys(limits).length ? ` · ${t.updated} ${new Date(e.attributes.limits_read_at).toLocaleTimeString(cardLanguage(this._hass, this._config.language))}` : ""}`);
     $("notice").classList.toggle("visible", !live); put("notice", offline ? t.awaiting : t.cached);
     put("footer-source", `${t.local} ${e?.attributes?.poll_interval || 5}${t.seconds} · ${t.readonly}`);
     put("footer-age", f.age === null ? "—" : `${t.updated} ${f.age}${t.ago}`);
@@ -152,22 +161,36 @@ export class DeyeLiveCard extends BaseElement {
 }
 
 class DeyeLiveCardEditor extends BaseElement {
-  setConfig(config) { this._config = config; this.draw(); }
+  setConfig(config) { this._config = { ...config }; this.draw(true); }
   set hass(hass) { this._hass = hass; this.draw(); }
-  draw() {
+  draw(syncValues = false) {
     if (!this._config || !this._hass) return;
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
-    // Do not rebuild while the user types or HA sends unrelated entity updates.
-    if (this.shadowRoot.childElementCount) return;
-    const t = textFor(this._hass);
+    const language = cardLanguage(this._hass, this._config.language);
+    // Keep drafts/focus during telemetry updates; rebuild labels only on language changes.
+    if (this.shadowRoot.childElementCount && this._editorLanguage === language) {
+      if (syncValues) this.shadowRoot.querySelectorAll("[data-config-key]").forEach(control => {
+        const key = control.dataset.configKey;
+        if (control.type === "checkbox") control.checked = this._config[key] !== false;
+        else control.value = this._config[key] || (key === "language" ? "auto" : "");
+      });
+      return;
+    }
+    this._editorLanguage = language;
+    const t = textFor(this._hass, this._config.language);
     const style = document.createElement("style"); style.textContent = `label{display:block;margin:15px 0;font:14px system-ui;color:var(--primary-text-color)}select,input[type=text]{display:block;width:100%;padding:12px;margin-top:8px;border:1px solid var(--divider-color,#aaa);border-radius:8px;box-sizing:border-box;background:var(--card-background-color,#fff);color:inherit;font:inherit}input[type=checkbox]{margin-right:10px}`;
-    this.shadowRoot.append(style);
+    this.shadowRoot.replaceChildren(style);
     const select = document.createElement("select");
     const blank = document.createElement("option"); blank.value = ""; blank.textContent = t.source; select.append(blank);
     for (const entity of Object.values(this._hass.states).filter(e => e.attributes?.deye_live)) {
       const option = document.createElement("option"); option.value = entity.entity_id; option.textContent = entity.attributes.friendly_name || entity.entity_id; select.append(option);
     }
     this.field(t.source, select, "entity"); select.value = this._config.entity || "";
+    const languageSelect = document.createElement("select");
+    for (const [value, text] of [["auto", t.automatic], ["en", "English"], ["zh-Hant", "繁體中文"]]) {
+      const option = document.createElement("option"); option.value = value; option.textContent = text; languageSelect.append(option);
+    }
+    this.field(t.language, languageSelect, "language"); languageSelect.value = this._config.language || "auto";
     const title = document.createElement("input"); title.type = "text"; title.value = this._config.title || ""; title.placeholder = t.title;
     this.field(t.cardTitle, title, "title");
     for (const [key, label] of [["show_solar", t.showSolar], ["show_limits", t.showLimits]]) {
@@ -175,10 +198,12 @@ class DeyeLiveCardEditor extends BaseElement {
     }
   }
   field(text, control, key) {
+    control.dataset.configKey = key;
     const label = document.createElement("label"); label.append(document.createTextNode(text), control); this.shadowRoot.append(label);
     control.addEventListener("change", () => {
       this._config = { ...this._config, [key]: control.type === "checkbox" ? control.checked : control.value };
       this.dispatchEvent(new CustomEvent("config-changed", { bubbles: true, composed: true, detail: { config: this._config } }));
+      if (key === "language") this.draw();
     });
   }
 }
