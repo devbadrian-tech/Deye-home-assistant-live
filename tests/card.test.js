@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finite, power, freshness, flow } from '../custom_components/deye_live/www/deye-live-card.js';
+import { finite, power, freshness, flow, cardLanguage, DeyeLiveCard } from '../custom_components/deye_live/www/deye-live-card.js';
 
 test('missing readings never turn into zero watts', () => {
   for (const n of [null, undefined, NaN, Infinity, '0', 'unavailable']) assert.equal(power(n), '—');
@@ -20,4 +20,26 @@ test('all signed power directions and idle deadband', () => {
   assert.equal(flow(900,'battery'), 'discharge'); assert.equal(flow(-900,'battery'), 'charge');
   assert.equal(flow(0,'grid'), 'idle'); assert.equal(flow(9,'battery'), 'idle');
   assert.equal(flow(900,'battery',false), 'unknown'); assert.equal(flow(null,'grid'), 'unknown');
+});
+
+test('card language can override Home Assistant or follow later locale changes', () => {
+  const hass = { locale: { language: 'zh-Hant' }, language: 'en' };
+  assert.equal(cardLanguage(hass), 'zh-Hant');
+  assert.equal(cardLanguage(hass, 'auto'), 'zh-Hant');
+  assert.equal(cardLanguage(hass, 'en'), 'en');
+  hass.locale.language = 'en-GB';
+  assert.equal(cardLanguage(hass, 'auto'), 'en');
+  assert.equal(cardLanguage(hass, 'zh-Hant'), 'zh-Hant');
+  assert.equal(cardLanguage({language:'zh-TW'}), 'zh-Hant');
+  assert.equal(cardLanguage({locale:{language:'fr'}}), 'en');
+  for (const language of [undefined, null, 42, 'unsupported']) {
+    assert.equal(cardLanguage({language:'zh-Hant'}, language), 'zh-Hant');
+  }
+  assert.equal(cardLanguage(undefined), 'en');
+});
+
+test('new cards default to automatic language and retain their source sensor', () => {
+  const stub = DeyeLiveCard.getStubConfig({states:{snapshot:{entity_id:'sensor.snapshot',attributes:{deye_live:true}}}});
+  assert.equal(stub.language, 'auto');
+  assert.equal(stub.entity, 'sensor.snapshot');
 });
