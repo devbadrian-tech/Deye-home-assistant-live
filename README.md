@@ -4,7 +4,7 @@
 
 **Created by Adrian and Codex**
 
-![Home Assistant](https://img.shields.io/badge/Home_Assistant-2026.9.1%2B-18BCF2?logo=homeassistant&logoColor=white)
+![Home Assistant](https://img.shields.io/badge/Home_Assistant_tested-2026.9.1-18BCF2?logo=homeassistant&logoColor=white)
 ![HACS Custom](https://img.shields.io/badge/HACS-Custom_repository-41BDF5)
 ![Read only](https://img.shields.io/badge/Inverter_access-Read_only-34856D)
 ![Local polling](https://img.shields.io/badge/Connection-Local_Modbus_TCP-34856D)
@@ -28,6 +28,37 @@ generation. No Deye Cloud account or Solarman V5 connection is required.
 | Fits your dashboard | Light/dark themes, responsive layout, English and Traditional Chinese |
 | Accessible | Keyboard navigation and reduced-motion support |
 | Read-only operation | No inverter controls, write services, clock changes or firmware updates |
+
+## Specifications
+
+| Item | Specification |
+| --- | --- |
+| Inverter tested | Deye SUN-5K-SG04LP1-AU |
+| Logger firmware tested | DYDA_WiBLE_1.7.2 |
+| Register profile | Single-phase SG0xLP1 |
+| Home Assistant | Minimum in HACS: 2026.9.1; tested on Core 2026.9.1 |
+| Connection | Local standard Modbus TCP; default port 502, unit 1 |
+| Power refresh | 5 seconds by default; configurable from 5–60 seconds |
+| Battery-limit refresh | Once per minute; card hides limits older than 3 minutes |
+| Entities | 19 sensors: 1 snapshot, 11 measurements, 7 battery-limit sensors |
+| Access | Read only; integration uses Modbus function 03 |
+| Languages | Automatic, English, Traditional Chinese; per-card selector in the next release |
+| Display | Mobile/tablet layouts, light/dark themes, power-flow animation, reduced-motion support |
+| License | [MIT](LICENSE) |
+
+### Available readings
+
+| Group | Readings | Units |
+| --- | --- | --- |
+| Power | House load, grid, battery, combined solar, PV1, PV2, inverter | W; card scales to kW |
+| Battery | State of charge, voltage, current | %, V, A |
+| Grid | Frequency | Hz |
+| Current limits | Maximum charge and discharge current | A |
+| Battery thresholds | Low, shutdown and restart SOC | % |
+| Schedule | Minimum/maximum target sensors; six slots in snapshot/card | % and start times |
+| Snapshot | Successful response time and card data | Timestamp + attributes |
+
+Power sensors are not cumulative kWh meters for the Home Assistant Energy dashboard.
 
 ## Compatibility
 
@@ -70,11 +101,26 @@ Some File editor installations display `/homeassistant` instead of `/config`.
 
 </details>
 
+### Connection settings
+
+After setup, open **Settings → Devices & services → Deye Live → Configure**.
+
+| Setting | Default | Purpose / allowed values |
+| --- | --- | --- |
+| Host | Required | Logger's local IP address or hostname |
+| Port | `502` | TCP service port; 1–65535 |
+| Unit | `1` | Modbus unit; 1–247 |
+| Update interval | `5` seconds | Power polling; 5–60 seconds |
+| Reverse grid direction | Off | Reverse displayed import/export sign |
+| Reverse battery direction | Off | Reverse displayed charge/discharge sign |
+
 ## Add the card
 
 Refresh your browser after adding the integration. Edit a dashboard, choose
 **Add card → Deye Live**, then select the **Live snapshot** sensor for your inverter.
-The visual editor lets you set a title and show/hide solar and battery limits.
+The visual editor lets you choose the card language, set a title and show/hide
+solar and battery limits. Under **Card language**, choose **Follow Home Assistant**
+(the default), **English**, or **繁體中文**. Each card can use its own language.
 
 The integration serves and registers the card automatically. You normally do
 not need a second HACS download or a manual dashboard resource.
@@ -83,6 +129,7 @@ not need a second HACS download or a manual dashboard resource.
 type: custom:deye-live-card
 entity: sensor.deye_live_XXXX_live_snapshot
 title: Home energy
+language: auto
 show_solar: true
 show_limits: true
 ```
@@ -90,6 +137,25 @@ show_limits: true
 Replace `XXXX` with the actual entity ID shown in Home Assistant. If a customized
 frontend prevents automatic loading, register `/deye_live/deye-live-card.js?v=0.1.0&dashboard=1`
 as a **JavaScript module** under Dashboard Resources, then refresh the browser.
+
+### Card settings
+
+| YAML key | Default | Purpose / choices |
+| --- | --- | --- |
+| `type` | Required | `custom:deye-live-card` |
+| `entity` | Required | Deye Live snapshot sensor |
+| `title` | Translated heading | Optional custom title, kept exactly as entered |
+| `language` | `auto` | `auto` follows Home Assistant; `en` English; `zh-Hant` Traditional Chinese |
+| `show_solar` | `true` | Show or hide solar |
+| `show_limits` | `true` | Show or hide battery limits |
+
+For YAML configuration, use `language: auto`, `language: en`, or
+`language: zh-Hant`. Automatic mode follows the viewing user's Home Assistant
+language and falls back to English for unsupported languages. Language applies
+to the card labels, status messages, battery limits, and editor; a custom `title`
+is kept exactly as entered. Existing cards without `language` use automatic mode.
+This option is prepared for the next release; the published 0.1.0 release does
+not include the language selector yet.
 
 ## Understanding the readings
 
@@ -183,7 +249,8 @@ python3 -m unittest discover -s tests -v
 node --test tests/*.test.js
 ```
 
-Coverage includes protocol framing, rejection of writes, signed decoding,
+Coverage includes frontend startup, language selection, protocol framing,
+rejection of writes, signed decoding,
 identity changes, missing optional registers, polling limits, freshness and flow
 direction. The initial release was also tested in the official HA 2026.9.1
 container with real hardware: setup, **19 sensor entities**, fresh timestamps,
@@ -198,3 +265,10 @@ The single-phase mapping was checked against these primary implementations:
 - [Home Assistant custom-card documentation](https://contributors.home-assistant.io/frontend/custom-ui/card/)
 
 The illustration above is a diagram, not a capture of household telemetry.
+
+## License and credits
+
+Released under the [MIT License](LICENSE). You may use, modify and redistribute
+this software under the terms in that file.
+
+**Created by Adrian and Codex.**
